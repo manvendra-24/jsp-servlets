@@ -1,0 +1,175 @@
+package com.bank.controller;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
+
+import com.bank.model.Customer;
+import com.bank.model.CustomerDAO;
+import com.bank.model.Transaction;
+import com.bank.model.TransactionDAO;
+
+@WebServlet("/CustomerController")
+public class CustomerController extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+
+	private CustomerDAO customerDbUtil;
+	private TransactionDAO transactionDbUtil;
+
+	@Resource(name = "jdbc/bank")
+	private DataSource dataSource;
+
+	@Override
+	public void init() throws ServletException {
+		super.init();
+		customerDbUtil = new CustomerDAO(dataSource);
+		transactionDbUtil = new TransactionDAO(dataSource);
+	}
+
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		String action;
+		action = request.getParameter("action");
+
+		if (action == null) {
+			action = "home";
+		}
+
+		switch (action) {
+		case "listPassbook":
+			
+			listPassbook(request, response);
+			break;
+		case "newTransaction":
+			newTransaction(request, response);
+			break;
+
+		case "addTransaction":
+			addTransaction(request, response);
+			break;
+
+		case "viewCustomer":
+			viewCustomer(request, response);
+			break;
+		case "updateCustomer":
+			try {
+				updateCustomer(request, response);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
+		case "editCustomer":
+			editCustomer(request, response);
+			break;
+
+		default:
+			customerHome(request, response);
+			break;
+		}
+	}
+
+	private void viewCustomer(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		RequestDispatcher requestDispatcher = request.getRequestDispatcher("edit-profile.jsp");
+		requestDispatcher.forward(request, response);
+	}
+
+	private void listPassbook(HttpServletRequest request, HttpServletResponse response) {
+		String user_name = request.getParameter("user_name");
+		//System.out.println(user_name);
+		List<Transaction> transactions = transactionDbUtil.getTransactionsForCustomer(user_name);
+		//System.out.println(transactions);
+		request.setAttribute("theTransactionList", transactions);
+		RequestDispatcher requestDispatcher = request.getRequestDispatcher("view-passbook.jsp");
+		try {
+			requestDispatcher.forward(request, response);
+		} catch (ServletException | IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void newTransaction(HttpServletRequest request, HttpServletResponse response) {
+		String user_name = request.getParameter("user_name");
+
+		String accountNumber = customerDbUtil.getAccountNumber(user_name);
+		//System.out.println(accountNumber);
+		request.setAttribute("senderAccountNumber", accountNumber);
+		RequestDispatcher requestDispatcher = request.getRequestDispatcher("new-transaction.jsp");
+		try {
+			requestDispatcher.forward(request, response);
+		} catch (ServletException | IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void addTransaction(HttpServletRequest request, HttpServletResponse response) {
+		int sender = Integer.parseInt(request.getParameter("senderAccountNumber"));
+		int receiver = Integer.parseInt(request.getParameter("receiverAccountNumber"));
+		int amount = Integer.parseInt(request.getParameter("amount"));
+
+		Transaction transaction = new Transaction();
+		transactionDbUtil.addTransaction(transaction);
+//		customerDbUtil.debit(sender);
+//		customerDbUtil.credit(receiver);
+
+		// redirect to passbook
+
+	}
+
+	
+
+	private void editCustomer(HttpServletRequest request, HttpServletResponse response) {
+		String email = request.getParameter("email");
+		int customer_id = Integer.parseInt(request.getParameter("id"));
+		String first_name = request.getParameter("first_name");
+		String last_name = request.getParameter("last_name");
+		String password = request.getParameter("password");
+		Customer customer = new Customer( customer_id,first_name, last_name, email,password);
+
+		boolean updated = customerDbUtil.editCustomer(customer, email);
+		if (updated) {
+			RequestDispatcher requestDispatcher = request.getRequestDispatcher("view-profile.jsp");
+			try {
+				requestDispatcher.forward(request, response);
+			} catch (ServletException | IOException e) {
+				e.printStackTrace();
+			}
+			return;
+		}
+	}
+
+	private void updateCustomer(HttpServletRequest request, HttpServletResponse response) throws SQLException {
+		int id = Integer.parseInt(request.getParameter("id"));
+		//System.out.println(user_name);
+		Customer customer = customerDbUtil.getCustomer(id);
+		request.setAttribute("theCustomer", customer);
+		RequestDispatcher requestDispatcher = request.getRequestDispatcher("edit-profile.jsp");
+		try {
+			requestDispatcher.forward(request, response);
+		} catch (ServletException | IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void customerHome(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		RequestDispatcher requestDispatcher = request.getRequestDispatcher("customer-home.jsp");
+		requestDispatcher.forward(request, response);
+	}
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		doGet(request, response);
+	}
+
+}

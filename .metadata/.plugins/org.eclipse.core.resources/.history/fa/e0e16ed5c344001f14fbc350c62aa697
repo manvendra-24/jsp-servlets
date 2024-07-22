@@ -1,0 +1,126 @@
+package com.techlabs.controller;
+
+import java.io.IOException;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
+
+import com.techlabs.dao.StudentDBUtil;
+import com.techlabs.entity.Student;
+
+@WebServlet("/StudentController")
+public class StudentController extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+    
+	private StudentDBUtil studentDbUtil;
+	
+	@Resource(name="jdbc/students")
+	private DataSource dataSource;
+	
+	@Override
+	public void init() throws ServletException{
+		super.init();
+		studentDbUtil = new StudentDBUtil(dataSource);
+	}
+	
+	public StudentController() {
+		super();
+	}
+	
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		String command;
+		command = request.getParameter("command");
+		
+		if(command == null) {
+			command = "list";
+		}
+		
+		System.out.println(command);
+		switch(command) {
+			case "add":
+				addStudent(request, response);
+				break;
+			case "delete":
+				deleteStudent(request, response);
+				break;
+			case "load":
+				loadStudent(request, response);
+				break;
+			default:
+				listStudents(request, response);
+		}
+		
+	}
+	
+	private void listStudents(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+		List<Student> studentList = studentDbUtil.getStudents();
+		for(Student student: studentList) {
+			System.out.println(student.getId() + " " + student.getFirstName() + " " + student.getLastName() + " " + student.getEmail());
+		}
+		request.setAttribute("theStudentList", studentList);
+		RequestDispatcher requestDispatcher = request.getRequestDispatcher("view-students.jsp");
+		requestDispatcher.forward(request, response);
+	}
+	
+	private void addStudent(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String firstName = request.getParameter("first_name");
+		String lastName = request.getParameter("last_name");
+		String email = request.getParameter("email");
+		
+		Student student = new Student(firstName, lastName, email);
+		
+		boolean isAdded = studentDbUtil.addStudent(student);
+		System.out.println(isAdded);
+		
+		//to avoid repeated addition on refresh
+		response.sendRedirect(request.getContextPath() + "/StudentController");
+		
+	}
+	
+	
+	private void deleteStudent(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		int id = Integer.parseInt(request.getParameter("id"));
+		boolean isDeleted = studentDbUtil.deleteStudent(id);
+		System.out.println(isDeleted);
+		
+		response.sendRedirect(request.getContextPath() + "/StudentController");
+	}
+	
+	
+	public void loadStudent(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		int id = Integer.parseInt(request.getParameter("id"));
+		Student student = studentDbUtil.getStudent(id);
+		System.out.println(student);
+	 
+		request.setAttribute("theStudent", student);
+		RequestDispatcher requestDispatcher = request.getRequestDispatcher("update-student.jsp");
+		requestDispatcher.forward(request, response);
+		
+	}
+	/*private void updateStudent(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String firstName = request.getParameter("first_name");
+		String lastName = request.getParameter("last_name");
+		String email = request.getParameter("email");
+		int id = Integer.parseInt(request.getParameter("id"));
+		
+		Student student = new Student(id, firstName, lastName, email);
+		
+		boolean isUpdated = studentDbUtil.updateStudent(student);
+		System.out.println(isUpdated);
+		response.sendRedirect(request.getContextPath() + "/StudentController");
+	}*/
+
+	
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		doGet(request,response);
+	}
+
+}

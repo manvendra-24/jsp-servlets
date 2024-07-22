@@ -1,0 +1,203 @@
+package com.bank.model;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.sql.DataSource;
+
+public class CustomerDAO {
+	private DataSource dataSource;
+
+	public CustomerDAO(DataSource dataSource) {
+		this.dataSource = dataSource;
+	}
+
+	public void addCustomer(Customer newCustomer) throws SQLException {
+		Connection conn = dataSource.getConnection();
+		String sql = "insert into customers (firstName,lastName,email,password,accountNumber,balance) values(?,?,?,?,?,?)";
+		PreparedStatement prepstmt = conn.prepareStatement(sql);
+		prepstmt.setString(1, newCustomer.getFirstName());
+		prepstmt.setString(2, newCustomer.getLastName());
+		prepstmt.setString(3, newCustomer.getEmail());
+		prepstmt.setString(4, newCustomer.getPassword());
+		prepstmt.setString(5, newCustomer.getAccountNumber());
+		prepstmt.setDouble(6, newCustomer.getBalance());
+
+		prepstmt.executeUpdate();
+
+	}
+
+	public List<Customer> listCustomers() {
+
+		List<Customer> customers = new ArrayList<Customer>();
+		try {
+
+			Connection conn = dataSource.getConnection();
+			Statement stmt = conn.createStatement();
+			String sql = "select * from customers";
+
+			ResultSet rs = stmt.executeQuery(sql);
+
+			while (rs.next()) {
+				Customer customer = new Customer();
+				customer.setId(rs.getInt(1));
+				customer.setFirstName(rs.getString(2));
+				customer.setLastName(rs.getString(3));
+				customer.setEmail(rs.getString(4));
+				customer.setAccountNumber(rs.getString(6));
+				customer.setPassword(rs.getString(5));
+				customer.setBalance(rs.getDouble(7));
+				customers.add(customer);
+
+			}
+		} catch (SQLException e) {
+
+			e.printStackTrace();
+		}
+
+		return customers;
+
+	}
+
+	public void deleteCustomer(int id) throws SQLException {
+		Connection conn = dataSource.getConnection();
+		String sql = "delete from  customers  where id=?";
+		PreparedStatement prepstmt = conn.prepareStatement(sql);
+		prepstmt.setInt(1, id);
+		prepstmt.executeUpdate();
+
+	}
+
+	public Customer getCustomer(int id) throws SQLException {
+		Connection conn = dataSource.getConnection();
+		String sql = "select * from  customers  where id=?";
+		PreparedStatement prepstmt = conn.prepareStatement(sql);
+		prepstmt.setInt(1, id);
+		ResultSet rs = prepstmt.executeQuery();
+
+		while (rs.next()) {
+			Customer customer = new Customer();
+			customer.setId(rs.getInt(1));
+			customer.setFirstName(rs.getString(2));
+			customer.setLastName(rs.getString(3));
+			customer.setEmail(rs.getString(4));
+			customer.setAccountNumber(rs.getString(6));
+			customer.setPassword(rs.getString(5));
+			customer.setBalance(rs.getDouble(7));
+			return customer;
+
+		}
+
+		return null;
+	}
+
+	public void updateCustomer(Customer newCustomer) throws SQLException {
+
+		Connection conn = dataSource.getConnection();
+		String sql = "update customers set firstName=?,lastName=?,email=?,password=?,balance=? where id=?";
+		PreparedStatement prepstmt = conn.prepareStatement(sql);
+		prepstmt.setString(1, newCustomer.getFirstName());
+		prepstmt.setString(2, newCustomer.getLastName());
+		prepstmt.setString(3, newCustomer.getEmail());
+		prepstmt.setString(4, newCustomer.getPassword());
+
+		prepstmt.setDouble(5, newCustomer.getBalance());
+		prepstmt.setInt(6, newCustomer.getId());
+
+		prepstmt.executeUpdate();
+
+	}
+
+	private void debit(int account_number,int amount) {
+	    try {
+	      Connection con = dataSource.getConnection();
+	      
+	      int new_balance =  amount;
+	      String sql = "select * from customers where account_number = ?";
+	      
+	      PreparedStatement stmt = con.prepareStatement(sql);
+	      
+	      stmt.setInt(1, account_number);
+	      ResultSet rs = stmt.executeQuery();
+	      
+	      while(rs.next()) {
+	        
+	        
+	      }
+	      
+	    } catch (SQLException e) {
+			e.printStackTrace();
+		}
+	  }
+
+	public String getAccountNumber(String user_name) {
+	    String account_number ;
+	    try {
+	      Connection con = dataSource.getConnection();
+	      
+	      String sql = "select * from customers where email = ?";
+	      
+	      PreparedStatement stmt = con.prepareStatement(sql);
+	      
+	      stmt.setString(1, user_name);
+	      ResultSet rs = stmt.executeQuery();
+	      
+	      while(rs.next()) {
+	        account_number = rs.getString(6);
+	        
+	        return account_number;
+	      }
+	    } catch (SQLException e) {
+			e.printStackTrace();
+		}
+	    
+	    return null;
+	  }
+
+	private void credit(int account_number,int amount) {
+	    try {
+	      Connection con = dataSource.getConnection();
+	      
+	      int old_balance=0;
+		int new_balance = old_balance + amount;
+	      String sql = "select * from customer where account_number = ?";
+	      
+	      PreparedStatement stmt = con.prepareStatement(sql);
+	      
+	      stmt.setInt(1, account_number);
+	      ResultSet rs = stmt.executeQuery();
+	      
+	      while(rs.next()) {
+	        
+	        
+	      }
+	    } catch (SQLException e) {
+			e.printStackTrace();
+		}
+	  }
+	public boolean editCustomer(Customer customer, String old_email) {
+	    try {
+	      Connection con = dataSource.getConnection();
+	      String sql = "update customers set  firstName = ?, lastName = ?, password = ?,email=?, where id = ?;";
+	      PreparedStatement stmt = con.prepareStatement(sql);
+	      stmt.setString(1, customer.getFirstName());
+	      stmt.setString(2, customer.getLastName());
+	      stmt.setString(3, customer.getPassword());
+	      stmt.setString(4, customer.getEmail());
+	      stmt.setInt(5, customer.getId());
+	      int rs = stmt.executeUpdate();
+	      if(rs == 1){
+	        return true;
+	      }
+	    } catch(SQLException e) {
+	      e.printStackTrace();
+	    }
+	    return false;
+	  }
+
+}

@@ -1,0 +1,109 @@
+package com.bank.model;
+
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.sql.DataSource;
+
+public class TransactionDAO {
+	private DataSource dataSource;
+
+	public TransactionDAO(DataSource dataSource) {
+		this.dataSource = dataSource;
+	}
+
+	public List<Transaction> listTransactions() {
+
+		List<Transaction> transactions = new ArrayList<Transaction>();
+		try {
+
+			Connection conn = dataSource.getConnection();
+			Statement stmt = conn.createStatement();
+			String sql = "select * from transactions";
+
+			ResultSet rs = stmt.executeQuery(sql);
+
+			while (rs.next()) {
+				Transaction transaction = new Transaction();
+
+				transaction.setId(rs.getInt(1));
+				transaction.setSenderAccNo(rs.getString(2));
+				transaction.setReceiverAccNo(rs.getString(3));
+				transaction.setType(rs.getString(4));
+				transaction.setAmount(rs.getDouble(5));
+				transaction.setDate(rs.getDate(6));
+
+				transactions.add(transaction);
+
+			}
+		} catch (SQLException e) {
+
+			e.printStackTrace();
+		}
+
+		return transactions;
+
+	}
+
+	public List<Transaction> getTransactionsForCustomer(String user_name) {
+		List<Transaction> transactions = new ArrayList<Transaction>();
+		try {
+			System.out.println(user_name);
+			Connection con = dataSource.getConnection();
+
+			String sql = "select * from transactions t join customers c on t.senderAccNo=c.accountNumber where c.email = ?;";
+
+			PreparedStatement stmt = con.prepareStatement(sql);
+
+			stmt.setString(1, user_name);
+
+			ResultSet rs = stmt.executeQuery();
+
+			while (rs.next()) {
+				int id = rs.getInt("id");
+
+				String senderAccount_number = rs.getString("senderAccNo");
+				String recAccount_number = rs.getString("receiverAccNo");
+				Date date=rs.getDate("date");
+
+				int amount = rs.getInt("amount");
+
+				Transaction transaction =new Transaction(id, senderAccount_number, recAccount_number, amount, date);					
+				transactions.add(transaction);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return transactions;
+	}
+
+	public boolean addTransaction(Transaction transaction) {
+		try {
+			Connection con = dataSource.getConnection();
+			String sql = "insert into transactions(senderAccNo,receiverAccNo,type,amount ) values( ?,?,?,?);";
+			PreparedStatement stmt = con.prepareStatement(sql);
+			
+			stmt.setString(1, transaction.getSenderAccNo());
+			stmt.setString(2, transaction.getReceiverAccNo());
+			stmt.setString(3, "transfer");
+			stmt.setDouble(4, transaction.getAmount());
+			
+
+			int rs = stmt.executeUpdate();
+			System.out.println(rs);
+			if (rs == 1) {
+				return true;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+}

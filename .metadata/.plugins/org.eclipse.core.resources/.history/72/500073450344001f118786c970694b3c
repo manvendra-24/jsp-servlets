@@ -1,0 +1,13 @@
+package com.techlabs.dao;
+
+import javax.sql.DataSource;
+
+public class StudentDBUtil {
+
+	
+
+	private DataSource dataSource;
+	public StudentDBUtil(DataSource dataSource) {
+		this.dataSource = dataSource;
+	}
+}

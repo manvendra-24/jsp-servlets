@@ -1,0 +1,13 @@
+package com.techlabs.model;
+
+public class StudentDataUtil {
+	public List<Student> getStudentList(){
+		List<Student> students = new ArrayList<>();
+		student.add(new Student(1,"Manvendra","k","manvendra@monocept.com"));
+		student.add(new Student(2,"pradeep","p","pradeep@monocept.com"));
+		student.add(new Student(3,"prateek","y","prateek@monocept.com"));
+		student.add(new Student(4,"varish","v","varish@monocept.com"));
+		
+		return students;
+	}
+}

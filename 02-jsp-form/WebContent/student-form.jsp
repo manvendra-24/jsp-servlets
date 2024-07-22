@@ -1,0 +1,60 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Student Form</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+<body>
+	<div class="container">
+		<h2 class="text-center">Student Form</h2><hr>
+	    <form action="student-form-response.jsp" method="get">
+	        <div class="col-sm-10 mb-3">
+	            <label for="first_name" class="form-label">First Name</label>
+	            <input type="text" name="first_name" id="first_name" class="form-control">
+	        </div>
+	        <div class="col-sm-10 mb-3">
+	            <label for="last_name" class="form-label">Last Name</label>
+	            <input type="text" name="last_name" id="last_name" class="form-control">
+	        </div>
+	        <div class="col-sm-10 mb-3">
+	        <label for="city" class="form-check-label" id="city">City</label><br>
+	            <select class="form-select" name="city" aria-label="Default select example">
+  					<option value="Mumbai">Mumbai</option>
+  					<option value="Chennai">Chennai</option>
+  					<option value="Banglore">Banglore</option>
+				</select>
+	        </div>
+	        <div class="col-sm-10 mb-3">
+	        	<label for="gender" class="form-label" id="gender">Gender</label>
+	        	<div class="form-check">
+					  <input class="form-check-input" value="Male" type="radio" name="gender" id="flexRadioDefault1">
+					  <label class="form-check-label" for="gender">
+					    Male
+					  </label>
+					</div>
+					<div class="form-check">
+					  <input class="form-check-input" value="Female" type="radio" name="gender" id="flexRadioDefault2">
+					  <label class="form-check-label" for="gender">
+					    Female
+					  </label>
+				</div>
+	        </div>
+	        
+	        <div class="col-sm-10 mb-3">
+	        	<label class="form-label" id="languages">Languages Known</label><br>
+				  <input class="form-check-input" type="checkbox" value="English" name="languages">English<br>
+				  <input class="form-check-input" type="checkbox" value="Hindi" name="languages">Hindi<br>
+				  <input class="form-check-input" type="checkbox" value="Tamil" name="languages">Kannada<br>
+				  <input class="form-check-input" type="checkbox" value="Kannada" name="languages">Tamil<br>
+	        </div>
+	       
+	        <div class="col-sm-10">
+	            <input type="submit" value="Submit" class="btn-btn-primary">
+	        </div>
+	    </form>
+	</div>
+</body>
+</html>
